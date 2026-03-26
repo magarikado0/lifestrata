@@ -44,7 +44,8 @@ function reparentInTree(
 
   const without = remove(goals);
   if (!moved) return goals;
-  const item = { ...moved, parentId: newParentId };
+  const movedGoal: Goal = moved;
+  const item = { ...movedGoal, parentId: newParentId };
 
   function insert(nodes: Goal[]): Goal[] {
     if (newParentId === null) return nodes; // handled outside
