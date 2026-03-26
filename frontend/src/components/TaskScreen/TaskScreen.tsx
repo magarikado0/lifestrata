@@ -32,6 +32,18 @@ export function TaskScreen({ tasks, goals, onAdd, onToggle, onDelete }: Props) {
     setWeekOffset(o => o + delta);
   }
 
+  function handleJumpToDate(date: string) {
+    setSelectedDate(date);
+    const todayDate = new Date(today);
+    const targetDate = new Date(date);
+    const todayMonday = new Date(todayDate);
+    todayMonday.setDate(todayDate.getDate() - ((todayDate.getDay() + 6) % 7));
+    const targetMonday = new Date(targetDate);
+    targetMonday.setDate(targetDate.getDate() - ((targetDate.getDay() + 6) % 7));
+    const diff = Math.round((targetMonday.getTime() - todayMonday.getTime()) / (7 * 24 * 60 * 60 * 1000));
+    setWeekOffset(diff);
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <WeekStrip
@@ -41,6 +53,7 @@ export function TaskScreen({ tasks, goals, onAdd, onToggle, onDelete }: Props) {
         onSelectDate={handleSelectDate}
         onWeekChange={handleWeekChange}
         onToday={handleToday}
+        onJumpToDate={handleJumpToDate}
       />
       <TaskList
         tasks={dayTasks}

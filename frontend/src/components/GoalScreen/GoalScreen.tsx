@@ -14,12 +14,7 @@ interface Props {
 export function GoalScreen({ goals, onToggle, onAddRoot, onAddChild, onDelete, onUnlink }: Props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
-        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>
-          人生設計
-        </h2>
-      </div>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '4px 16px 0' }}>
         <GoalTree
           goals={goals}
           onToggle={onToggle}

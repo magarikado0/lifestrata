@@ -30,7 +30,7 @@ function TreeIcon({ active }: { active: boolean }) {
 
 const TABS: { key: Tab; label: string; Icon: typeof ChecklistIcon }[] = [
   { key: 'tasks', label: 'タスク', Icon: ChecklistIcon },
-  { key: 'goals', label: '人生設計', Icon: TreeIcon },
+  { key: 'goals', label: '目標ツリー', Icon: TreeIcon },
 ];
 
 export function TabBar({ active, onChange }: Props) {
