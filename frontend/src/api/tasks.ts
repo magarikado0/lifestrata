@@ -28,9 +28,12 @@ export async function fetchAllTasks(): Promise<Task[]> {
 export async function createTask(
   task: Pick<Task, 'text' | 'date' | 'hasTime' | 'minutes' | 'goalId'>
 ): Promise<Task> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
     .from('tasks')
     .insert({
+      user_id: user.id,
       text: task.text,
       date: task.date,
       has_time: task.hasTime,

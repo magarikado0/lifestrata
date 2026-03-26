@@ -51,23 +51,9 @@ function MainApp({ email }: { email: string }) {
             onAddChild={addChildGoal}
             onDelete={deleteGoal}
             onUnlink={handleUnlink}
+            onSettings={() => setShowSettings(true)}
           />
         </div>
-
-        {/* 設定ボタン（右上固定） */}
-        <button
-          onClick={() => setShowSettings(true)}
-          style={{
-            position: 'absolute', top: 10, right: 12,
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: 'var(--text-muted)', padding: 4, zIndex: 10,
-          }}
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="10" cy="10" r="2.5" />
-            <path d="M10 2v1.5M10 16.5V18M2 10h1.5M16.5 10H18M4.1 4.1l1.1 1.1M14.8 14.8l1.1 1.1M15.9 4.1l-1.1 1.1M5.2 14.8l-1.1 1.1" />
-          </svg>
-        </button>
       </div>
 
       <TabBar active={tab} onChange={setTab} />

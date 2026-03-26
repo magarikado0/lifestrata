@@ -40,9 +40,11 @@ export async function fetchGoals(): Promise<Goal[]> {
 export async function createGoal(
   goal: Pick<Goal, 'parentId' | 'text' | 'order'>
 ): Promise<Goal> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
     .from('goals')
-    .insert({ parent_id: goal.parentId, text: goal.text, order: goal.order, open: true })
+    .insert({ user_id: user.id, parent_id: goal.parentId, text: goal.text, order: goal.order, open: true })
     .select()
     .single();
   if (error) throw error;
