@@ -9,6 +9,8 @@ function toGoalFlat(row: Record<string, unknown>): Omit<Goal, 'children' | 'link
     text: row.text as string,
     order: row.order as number,
     open: row.open as boolean,
+    deadline: row.deadline as string | null,
+    deadlineMinutes: row.deadline_minutes as number | null,
     createdAt: row.created_at as string,
   };
 }
@@ -51,8 +53,28 @@ export async function createGoal(
   return { ...toGoalFlat(data), children: [], linkedTasks: [] };
 }
 
-export async function patchGoal(id: number, updates: { text?: string; open?: boolean }): Promise<void> {
-  const { error } = await supabase.from('goals').update(updates).eq('id', id);
+export async function patchGoal(
+  id: number,
+  updates: { text?: string; open?: boolean; deadline?: string | null; deadlineMinutes?: number | null }
+): Promise<void> {
+  const row: Record<string, unknown> = {};
+  if (updates.text !== undefined) row.text = updates.text;
+  if (updates.open !== undefined) row.open = updates.open;
+  if ('deadline' in updates) row.deadline = updates.deadline;
+  if ('deadlineMinutes' in updates) row.deadline_minutes = updates.deadlineMinutes;
+  const { error } = await supabase.from('goals').update(row).eq('id', id);
+  if (error) throw error;
+}
+
+export async function reparentGoal(
+  id: number,
+  parentId: number | null,
+  order: number,
+): Promise<void> {
+  const { error } = await supabase
+    .from('goals')
+    .update({ parent_id: parentId, order })
+    .eq('id', id);
   if (error) throw error;
 }
 

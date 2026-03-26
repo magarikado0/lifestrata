@@ -15,7 +15,7 @@ function MainApp({ email }: { email: string }) {
   const [tab, setTab] = useState<Tab>('tasks');
   const [showSettings, setShowSettings] = useState(false);
   const { tasks, addTask, updateTask, deleteTask, toggleDone } = useTasks();
-  const { goals, addRootGoal, addChildGoal, toggleOpen, deleteGoal } = useGoals(tasks);
+  const { goals, addRootGoal, addChildGoal, updateGoal, toggleOpen, reparentGoal, deleteGoal } = useGoals(tasks);
 
   function handleUnlink(_goalId: number, taskId: number) {
     updateTask(taskId, { goalId: null });
@@ -52,8 +52,10 @@ function MainApp({ email }: { email: string }) {
             onToggle={toggleOpen}
             onAddRoot={addRootGoal}
             onAddChild={addChildGoal}
+            onUpdate={updateGoal}
             onDelete={deleteGoal}
             onUnlink={handleUnlink}
+            onReparent={reparentGoal}
             onSettings={() => setShowSettings(true)}
           />
         </div>

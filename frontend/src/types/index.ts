@@ -17,6 +17,8 @@ export interface Goal {
   text: string;
   order: number;
   open: boolean;
+  deadline: string | null; // ISO date string "YYYY-MM-DD"
+  deadlineMinutes: number | null; // minutes from 0:00
   createdAt: string;
   children: Goal[];
   linkedTasks: Pick<Task, 'id' | 'text' | 'done'>[];

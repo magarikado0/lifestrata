@@ -1,20 +1,27 @@
+import { useState } from 'react';
 import { type Goal } from '../../types';
-import { GoalTree } from './GoalTree';
-import { AddBar } from './AddBar';
+import { SortableGoalTree } from './SortableGoalTree';
+import { Modal } from '../common/Modal';
 
 interface Props {
   goals: Goal[];
   onToggle: (id: number) => void;
   onAddRoot: (text: string) => void;
   onAddChild: (parentId: number, text: string) => void;
+  onUpdate: (id: number, updates: { deadline?: string | null; deadlineMinutes?: number | null }) => void;
   onDelete: (id: number) => void;
   onUnlink: (goalId: number, taskId: number) => void;
+  onReparent: (id: number, newParentId: number | null, newOrder: number) => void;
   onSettings: () => void;
 }
 
-export function GoalScreen({ goals, onToggle, onAddRoot, onAddChild, onDelete, onUnlink, onSettings }: Props) {
+export function GoalScreen({
+  goals, onToggle, onAddRoot, onAddChild, onUpdate, onDelete, onUnlink, onReparent, onSettings,
+}: Props) {
+  const [showAddModal, setShowAddModal] = useState(false);
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '10px 12px 0' }}>
         <button
           onClick={onSettings}
@@ -26,16 +33,41 @@ export function GoalScreen({ goals, onToggle, onAddRoot, onAddChild, onDelete, o
           </svg>
         </button>
       </div>
+
       <div style={{ flex: 1, overflowY: 'auto', padding: '4px 16px 0' }}>
-        <GoalTree
+        <SortableGoalTree
           goals={goals}
           onToggle={onToggle}
           onAddChild={onAddChild}
+          onUpdate={onUpdate}
           onDelete={onDelete}
           onUnlink={onUnlink}
+          onReparent={onReparent}
         />
       </div>
-      <AddBar onAdd={onAddRoot} />
+
+      {/* FAB */}
+      <button
+        onClick={() => setShowAddModal(true)}
+        style={{
+          position: 'absolute', bottom: 24, right: 20,
+          width: 52, height: 52, borderRadius: '50%',
+          background: 'var(--text-primary)', color: '#fff',
+          border: 'none', fontSize: 26, cursor: 'pointer',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        +
+      </button>
+
+      {showAddModal && (
+        <Modal
+          title="ルートゴールを追加"
+          onClose={() => setShowAddModal(false)}
+          onSubmit={text => onAddRoot(text)}
+        />
+      )}
     </div>
   );
 }

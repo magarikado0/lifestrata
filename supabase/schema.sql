@@ -2,13 +2,15 @@
 -- Supabase ダッシュボードの SQL Editor で実行する
 
 create table if not exists goals (
-  id         bigint primary key generated always as identity,
-  user_id    uuid references auth.users not null,
-  parent_id  bigint references goals(id) on delete cascade,
-  text       text not null,
-  "order"    integer not null default 0,
-  open       boolean not null default true,
-  created_at timestamptz not null default now()
+  id               bigint primary key generated always as identity,
+  user_id          uuid references auth.users not null,
+  parent_id        bigint references goals(id) on delete cascade,
+  text             text not null,
+  "order"          integer not null default 0,
+  open             boolean not null default true,
+  deadline         date,
+  deadline_minutes integer,
+  created_at       timestamptz not null default now()
 );
 
 create table if not exists tasks (

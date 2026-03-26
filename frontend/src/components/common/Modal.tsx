@@ -25,16 +25,18 @@ export function Modal({ title, onClose, onSubmit }: Props) {
   return (
     <div
       style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)',
-        display: 'flex', alignItems: 'flex-end', zIndex: 50,
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 200, padding: '0 16px',
       }}
       onClick={onClose}
     >
       <div
         style={{
-          width: '100%', maxWidth: 430, margin: '0 auto',
-          background: 'var(--bg)', borderRadius: '16px 16px 0 0',
-          padding: '20px 16px 32px',
+          width: '100%', maxWidth: 400,
+          background: 'var(--bg)', borderRadius: 16,
+          padding: '20px 16px 20px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
         }}
         onClick={e => e.stopPropagation()}
       >

@@ -4,7 +4,9 @@
       "Bash(npm create:*)",
       "Bash(npm install:*)",
       "Bash(npm run:*)",
-      "Bash(npx pwa-assets-generator:*)"
+      "Bash(npx pwa-assets-generator:*)",
+      "Bash(find /c/Users/ka5ry/Documents/work/lifestrata -name *.sql -o -name *migration*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

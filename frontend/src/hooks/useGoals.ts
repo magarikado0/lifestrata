@@ -27,6 +27,45 @@ function updateInTree(goals: Goal[], id: number, updater: (g: Goal) => Goal): Go
   );
 }
 
+function reparentInTree(
+  goals: Goal[],
+  movedId: number,
+  newParentId: number | null,
+  newOrder: number,
+): Goal[] {
+  let moved: Goal | null = null;
+
+  function remove(nodes: Goal[]): Goal[] {
+    return nodes
+      .filter(g => { if (g.id === movedId) { moved = g; return false; } return true; })
+      .map(g => ({ ...g, children: remove(g.children) }))
+      .map((g, i) => ({ ...g, order: i }));
+  }
+
+  const without = remove(goals);
+  if (!moved) return goals;
+  const item = { ...moved, parentId: newParentId };
+
+  function insert(nodes: Goal[]): Goal[] {
+    if (newParentId === null) return nodes; // handled outside
+    return nodes.map(g => {
+      if (g.id === newParentId) {
+        const children = [...g.children];
+        children.splice(newOrder, 0, item);
+        return { ...g, children: children.map((c, i) => ({ ...c, order: i })) };
+      }
+      return { ...g, children: insert(g.children) };
+    });
+  }
+
+  if (newParentId === null) {
+    const result = [...without];
+    result.splice(newOrder, 0, item);
+    return result.map((g, i) => ({ ...g, order: i }));
+  }
+  return insert(without);
+}
+
 function deleteInTree(goals: Goal[], id: number): Goal[] {
   return goals
     .filter(g => g.id !== id)
@@ -58,7 +97,10 @@ export function useGoals(tasks: Task[]) {
     );
   }, [rawGoals]);
 
-  const updateGoal = useCallback(async (id: number, updates: { text?: string; open?: boolean }) => {
+  const updateGoal = useCallback(async (
+    id: number,
+    updates: { text?: string; open?: boolean; deadline?: string | null; deadlineMinutes?: number | null }
+  ) => {
     setRawGoals(prev => updateInTree(prev, id, g => ({ ...g, ...updates })));
     await api.patchGoal(id, updates);
   }, []);
@@ -72,10 +114,18 @@ export function useGoals(tasks: Task[]) {
     await api.patchGoal(id, { open: newOpen });
   }, []);
 
+  const reparentGoal = useCallback(async (id: number, newParentId: number | null, newOrder: number) => {
+    setRawGoals(prev => reparentInTree(prev, id, newParentId, newOrder));
+    await api.reparentGoal(id, newParentId, newOrder);
+    // Refetch to ensure order consistency with DB
+    const updated = await api.fetchGoals();
+    setRawGoals(updated);
+  }, []);
+
   const deleteGoal = useCallback(async (id: number) => {
     setRawGoals(prev => deleteInTree(prev, id));
     await api.removeGoal(id);
   }, []);
 
-  return { goals, loading, addRootGoal, addChildGoal, updateGoal, toggleOpen, deleteGoal };
+  return { goals, loading, addRootGoal, addChildGoal, updateGoal, toggleOpen, reparentGoal, deleteGoal };
 }

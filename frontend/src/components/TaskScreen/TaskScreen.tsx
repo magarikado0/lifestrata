@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { type Task, type Goal, formatDate } from '../../types';
 import { WeekStrip } from './WeekStrip';
 import { TaskList } from './TaskList';
-import { AddBar } from './AddBar';
+import { AddModal } from './AddModal';
 
 interface Props {
   tasks: Task[];
@@ -16,6 +16,8 @@ export function TaskScreen({ tasks, goals, onAdd, onToggle, onDelete }: Props) {
   const today = formatDate(new Date());
   const [selectedDate, setSelectedDate] = useState(today);
   const [weekOffset, setWeekOffset] = useState(0);
+  const [showAddModal, setShowAddModal] = useState(false);
+
   const taskDates = useMemo(() => new Set(tasks.map(t => t.date)), [tasks]);
   const dayTasks = useMemo(() => tasks.filter(t => t.date === selectedDate), [tasks, selectedDate]);
 
@@ -45,7 +47,7 @@ export function TaskScreen({ tasks, goals, onAdd, onToggle, onDelete }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', position: 'relative' }}>
       <WeekStrip
         selectedDate={selectedDate}
         weekOffset={weekOffset}
@@ -61,7 +63,32 @@ export function TaskScreen({ tasks, goals, onAdd, onToggle, onDelete }: Props) {
         onToggle={onToggle}
         onDelete={onDelete}
       />
-      <AddBar goals={goals} onAdd={(text, hasTime, minutes, goalId) => onAdd(text, selectedDate, hasTime, minutes, goalId)} />
+
+      <button
+        onClick={() => setShowAddModal(true)}
+        style={{
+          position: 'absolute', bottom: 24, right: 20,
+          width: 52, height: 52, borderRadius: '50%',
+          background: 'var(--text-primary)', color: '#fff',
+          border: 'none', fontSize: 26, cursor: 'pointer',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        +
+      </button>
+
+      {showAddModal && (
+        <AddModal
+          goals={goals}
+          selectedDate={selectedDate}
+          onAdd={(text, hasTime, minutes, goalId) => {
+            onAdd(text, selectedDate, hasTime, minutes, goalId);
+            setShowAddModal(false);
+          }}
+          onClose={() => setShowAddModal(false)}
+        />
+      )}
     </div>
   );
 }

@@ -2,10 +2,12 @@ import { useState, useRef } from 'react';
 import { type Goal } from '../../types';
 import { TimeSlider } from './TimeSlider';
 import { GoalPicker } from './GoalPicker';
+import { CalendarPicker } from './CalendarPicker';
 
 interface Props {
   goals: Goal[];
-  onAdd: (text: string, hasTime: boolean, minutes: number | null, goalId: number | null) => void;
+  selectedDate: string;
+  onAdd: (text: string, hasTime: boolean, minutes: number | null, goalId: number | null, hasDeadline: boolean, deadline: string | null) => void;
 }
 
 function findGoalText(goals: Goal[], id: number): string | null {
@@ -17,22 +19,25 @@ function findGoalText(goals: Goal[], id: number): string | null {
   return null;
 }
 
-export function AddBar({ goals, onAdd }: Props) {
+export function AddBar({ goals, selectedDate, onAdd }: Props) {
   const [text, setText] = useState('');
   const [showSlider, setShowSlider] = useState(false);
   const [minutes, setMinutes] = useState(540);
   const [showGoalPicker, setShowGoalPicker] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<number | null>(null);
+  const [showDeadlinePicker, setShowDeadlinePicker] = useState(false);
+  const [deadlineDate, setDeadlineDate] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = text.trim();
     if (!trimmed) return;
-    onAdd(trimmed, showSlider, showSlider ? minutes : null, selectedGoalId);
+    onAdd(trimmed, showSlider, showSlider ? minutes : null, selectedGoalId, deadlineDate !== null, deadlineDate);
     setText('');
     setShowSlider(false);
     setSelectedGoalId(null);
+    setDeadlineDate(null);
   }
 
   const selectedGoalText = selectedGoalId !== null ? findGoalText(goals, selectedGoalId) : null;
@@ -45,6 +50,25 @@ export function AddBar({ goals, onAdd }: Props) {
           onChange={setMinutes}
           onClear={() => setShowSlider(false)}
         />
+      )}
+
+      {deadlineDate && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            fontSize: 12, padding: '3px 8px', borderRadius: 20,
+            background: '#EF5350', color: '#fff',
+          }}>
+            期限: {deadlineDate}
+            <button
+              type="button"
+              onClick={() => setDeadlineDate(null)}
+              style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: 0, fontSize: 13, lineHeight: 1 }}
+            >
+              ×
+            </button>
+          </span>
+        </div>
       )}
 
       {selectedGoalText && (
@@ -105,6 +129,20 @@ export function AddBar({ goals, onAdd }: Props) {
             <path d="M12 11 L19 16" />
           </svg>
         </button>
+        <button
+          type="button"
+          onClick={() => setShowDeadlinePicker(true)}
+          style={{
+            width: 32, height: 32, borderRadius: 8,
+            border: '1px solid var(--border)',
+            background: deadlineDate !== null ? '#EF5350' : 'none',
+            color: deadlineDate !== null ? '#fff' : 'var(--text-secondary)',
+            cursor: 'pointer', fontSize: 14, flexShrink: 0,
+          }}
+          title="期限を設定"
+        >
+          ⏰
+        </button>
         <input
           ref={inputRef}
           value={text}
@@ -136,6 +174,15 @@ export function AddBar({ goals, onAdd }: Props) {
           selectedId={selectedGoalId}
           onSelect={setSelectedGoalId}
           onClose={() => setShowGoalPicker(false)}
+        />
+      )}
+
+      {showDeadlinePicker && (
+        <CalendarPicker
+          selectedDate={deadlineDate ?? selectedDate}
+          taskDates={new Set()}
+          onSelect={date => { setDeadlineDate(date); setShowDeadlinePicker(false); }}
+          onClose={() => setShowDeadlinePicker(false)}
         />
       )}
     </div>
