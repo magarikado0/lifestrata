@@ -13,7 +13,7 @@ export function TaskList({ tasks, onToggle, onDelete }: Props) {
   const done = tasks.filter(t => t.done);
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px' }}>
+    <div style={{ padding: '0 16px' }}>
       {active.map(t => (
         <TaskItem key={t.id} task={t} onToggle={() => onToggle(t.id)} onDelete={() => onDelete(t.id)} />
       ))}

@@ -47,16 +47,18 @@ export function TaskScreen({ tasks, goals, onAdd, onToggle, onDelete }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', position: 'relative' }}>
-      <WeekStrip
-        selectedDate={selectedDate}
-        weekOffset={weekOffset}
-        taskDates={taskDates}
-        onSelectDate={handleSelectDate}
-        onWeekChange={handleWeekChange}
-        onToday={handleToday}
-        onJumpToDate={handleJumpToDate}
-      />
+    <div style={{ height: '100%', overflowY: 'auto', position: 'relative' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg)' }}>
+        <WeekStrip
+          selectedDate={selectedDate}
+          weekOffset={weekOffset}
+          taskDates={taskDates}
+          onSelectDate={handleSelectDate}
+          onWeekChange={handleWeekChange}
+          onToday={handleToday}
+          onJumpToDate={handleJumpToDate}
+        />
+      </div>
       <TaskList
         tasks={dayTasks}
         filter="all"
