@@ -27,6 +27,7 @@ function MainApp({ email }: { email: string }) {
         <div style={{
           position: 'absolute', inset: 0,
           paddingBottom: 'calc(61px + env(safe-area-inset-bottom))',
+          overflow: 'hidden',
           opacity: tab === 'tasks' ? 1 : 0,
           pointerEvents: tab === 'tasks' ? 'auto' : 'none',
           transition: 'opacity 0.15s',

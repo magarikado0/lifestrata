@@ -45,7 +45,7 @@ export function TaskScreen({ tasks, goals, onAdd, onToggle, onDelete }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       <WeekStrip
         selectedDate={selectedDate}
         weekOffset={weekOffset}
