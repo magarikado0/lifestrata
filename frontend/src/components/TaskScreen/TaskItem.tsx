@@ -26,7 +26,7 @@ export function TaskItem({ task, onToggle, onDelete }: Props) {
           transition: 'all 0.15s',
         }}
       >
-        {task.done && <span style={{ color: '#fff', fontSize: 12, lineHeight: 1 }}>✓</span>}
+        {task.done && <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5 6 4.5 9 10.5 3"/></svg>}
       </button>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{

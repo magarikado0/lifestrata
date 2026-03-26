@@ -50,12 +50,15 @@ export function GoalScreen({
       <button
         onClick={() => setShowAddModal(true)}
         style={{
-          position: 'absolute', bottom: 24, right: 20,
+          position: 'fixed',
+          bottom: 'calc(61px + env(safe-area-inset-bottom) + 16px)',
+          right: 20,
           width: 52, height: 52, borderRadius: '50%',
           background: 'var(--text-primary)', color: '#fff',
           border: 'none', fontSize: 26, cursor: 'pointer',
           boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 50,
         }}
       >
         +

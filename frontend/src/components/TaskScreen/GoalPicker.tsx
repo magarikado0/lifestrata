@@ -88,7 +88,7 @@ export function GoalPicker({ goals, selectedId, onSelect, onClose }: Props) {
                   {g.text}
                 </span>
                 {isSelected && (
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)' }}>✓</span>
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5 6 4.5 9 10.5 3"/></svg>
                 )}
               </button>
             );

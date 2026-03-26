@@ -69,7 +69,7 @@ export function DeadlineModal({ current, onSave, onClose }: Props) {
             color: deadline ? deadlineColor(deadline) : 'var(--text-secondary)',
           }}
         >
-          <span>📅</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           <span style={{ flex: 1, textAlign: 'left' }}>
             {deadline ?? '日付を選択'}
           </span>
@@ -96,7 +96,7 @@ export function DeadlineModal({ current, onSave, onClose }: Props) {
                 cursor: 'pointer', fontSize: 14,
               }}
             >
-              <span>🕐</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14.5"/></svg>
               <span style={{ flex: 1, textAlign: 'left' }}>
                 {hasTime ? `時刻: ${minutesToTime(deadlineMinutes)}` : '時刻を設定'}
               </span>

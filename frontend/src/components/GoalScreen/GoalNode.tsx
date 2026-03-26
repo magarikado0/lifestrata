@@ -96,7 +96,8 @@ export function GoalNode({ goal, depth, onToggle, onAddChild, onUpdate, onDelete
                 display: 'inline-flex', alignItems: 'center', gap: 3,
               }}
             >
-              ⏰ {goal.deadline}
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14.5"/></svg>
+              {goal.deadline}
               {goal.deadlineMinutes !== null && ` ${minutesToTime(goal.deadlineMinutes)}`}
             </div>
           )}
