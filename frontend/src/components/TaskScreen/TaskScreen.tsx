@@ -67,7 +67,7 @@ export function TaskScreen({ tasks, goals, onAdd, onToggle, onDelete }: Props) {
       <button
         onClick={() => setShowAddModal(true)}
         style={{
-          position: 'absolute', bottom: 24, right: 20,
+          position: 'fixed', bottom: 'calc(61px + env(safe-area-inset-bottom) + 16px)', right: 20, zIndex: 50,
           width: 52, height: 52, borderRadius: '50%',
           background: 'var(--text-primary)', color: '#fff',
           border: 'none', fontSize: 26, cursor: 'pointer',
