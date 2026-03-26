@@ -26,6 +26,7 @@ function MainApp({ email }: { email: string }) {
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         <div style={{
           position: 'absolute', inset: 0,
+          paddingBottom: 'calc(61px + env(safe-area-inset-bottom))',
           opacity: tab === 'tasks' ? 1 : 0,
           pointerEvents: tab === 'tasks' ? 'auto' : 'none',
           transition: 'opacity 0.15s',
@@ -40,6 +41,7 @@ function MainApp({ email }: { email: string }) {
         </div>
         <div style={{
           position: 'absolute', inset: 0,
+          paddingBottom: 'calc(61px + env(safe-area-inset-bottom))',
           opacity: tab === 'goals' ? 1 : 0,
           pointerEvents: tab === 'goals' ? 'auto' : 'none',
           transition: 'opacity 0.15s',

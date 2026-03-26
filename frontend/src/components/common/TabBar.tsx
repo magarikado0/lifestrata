@@ -37,10 +37,17 @@ export function TabBar({ active, onChange }: Props) {
   return (
     <div
       style={{
+        position: 'fixed',
+        bottom: 0,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '100%',
+        maxWidth: 430,
         display: 'flex',
         borderTop: '1px solid var(--border)',
         background: 'var(--bg)',
         paddingBottom: 'env(safe-area-inset-bottom)',
+        zIndex: 100,
       }}
     >
       {TABS.map(({ key, label, Icon }) => {

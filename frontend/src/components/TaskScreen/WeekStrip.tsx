@@ -101,7 +101,7 @@ export function WeekStrip({ selectedDate, weekOffset, taskDates, onSelectDate, o
 
   return (
     <>
-      <div style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)', padding: '8px 12px 0' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg)', borderBottom: '1px solid var(--border)', padding: '8px 12px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <button onClick={() => onWeekChange(-1)} style={navBtnStyle}>‹</button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
