@@ -1,48 +1,45 @@
-import { useState, useCallback } from 'react';
-import { type Task, formatDate } from '../types';
-
-let nextId = 1;
-
-function makeTask(partial: Omit<Task, 'id' | 'userId' | 'createdAt'>): Task {
-  return {
-    id: nextId++,
-    userId: 1,
-    createdAt: new Date().toISOString(),
-    ...partial,
-  };
-}
+import { useState, useCallback, useEffect } from 'react';
+import { type Task } from '../types';
+import * as api from '../api/tasks';
 
 export function useTasks() {
-  const [tasks, setTasks] = useState<Task[]>([
-    makeTask({ text: 'ABM実装の続き', date: formatDate(new Date()), hasTime: true, minutes: 540, done: false, goalId: null }),
-    makeTask({ text: '論文読む', date: formatDate(new Date()), hasTime: true, minutes: 480, done: false, goalId: null }),
-    makeTask({ text: '買い物', date: formatDate(new Date()), hasTime: false, minutes: null, done: false, goalId: null }),
-    makeTask({ text: 'メール返信', date: formatDate(new Date()), hasTime: true, minutes: 780, done: true, goalId: null }),
-  ]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const getTasksForDate = useCallback((date: string) => {
-    return tasks.filter(t => t.date === date);
-  }, [tasks]);
-
-  const getTasksForWeek = useCallback((from: string, to: string) => {
-    return tasks.filter(t => t.date >= from && t.date <= to);
-  }, [tasks]);
-
-  const addTask = useCallback((text: string, date: string, hasTime: boolean, minutes: number | null, goalId: number | null = null) => {
-    setTasks(prev => [...prev, makeTask({ text, date, hasTime, minutes, done: false, goalId })]);
+  useEffect(() => {
+    api.fetchAllTasks()
+      .then(setTasks)
+      .finally(() => setLoading(false));
   }, []);
 
-  const updateTask = useCallback((id: number, updates: Partial<Task>) => {
+  const addTask = useCallback(async (
+    text: string,
+    date: string,
+    hasTime: boolean,
+    minutes: number | null,
+    goalId: number | null = null,
+  ) => {
+    const created = await api.createTask({ text, date, hasTime, minutes, goalId });
+    setTasks(prev => [...prev, created]);
+  }, []);
+
+  const updateTask = useCallback(async (id: number, updates: Partial<Task>) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+    await api.patchTask(id, updates);
   }, []);
 
-  const deleteTask = useCallback((id: number) => {
+  const deleteTask = useCallback(async (id: number) => {
     setTasks(prev => prev.filter(t => t.id !== id));
+    await api.removeTask(id);
   }, []);
 
-  const toggleDone = useCallback((id: number) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
-  }, []);
+  const toggleDone = useCallback(async (id: number) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    const done = !task.done;
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, done } : t));
+    await api.patchTask(id, { done });
+  }, [tasks]);
 
-  return { tasks, getTasksForDate, getTasksForWeek, addTask, updateTask, deleteTask, toggleDone };
+  return { tasks, loading, addTask, updateTask, deleteTask, toggleDone };
 }

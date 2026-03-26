@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { type Session } from '@supabase/supabase-js';
+import { supabase } from './lib/supabase';
+import { AuthScreen } from './components/auth/AuthScreen';
 import { TabBar } from './components/common/TabBar';
 import { TaskScreen } from './components/TaskScreen/TaskScreen';
 import { GoalScreen } from './components/GoalScreen/GoalScreen';
@@ -7,9 +10,9 @@ import { useGoals } from './hooks/useGoals';
 
 type Tab = 'tasks' | 'goals';
 
-export default function App() {
+function MainApp() {
   const [tab, setTab] = useState<Tab>('tasks');
-  const { tasks, addTask, toggleDone, deleteTask, updateTask } = useTasks();
+  const { tasks, addTask, updateTask, deleteTask, toggleDone } = useTasks();
   const { goals, addRootGoal, addChildGoal, toggleOpen, deleteGoal } = useGoals(tasks);
 
   function handleUnlink(_goalId: number, taskId: number) {
@@ -52,4 +55,22 @@ export default function App() {
       <TabBar active={tab} onChange={setTab} />
     </div>
   );
+}
+
+export default function App() {
+  const [session, setSession] = useState<Session | null | undefined>(undefined);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (session === undefined) return null; // セッション確認中
+
+  if (!session) return <AuthScreen />;
+
+  return <MainApp />;
 }

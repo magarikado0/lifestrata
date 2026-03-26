@@ -1,6 +1,6 @@
 export interface Task {
   id: number;
-  userId: number;
+  userId: string; // Supabase auth UUID
   text: string;
   date: string; // ISO date string
   hasTime: boolean;
@@ -12,7 +12,7 @@ export interface Task {
 
 export interface Goal {
   id: number;
-  userId: number;
+  userId: string; // Supabase auth UUID
   parentId: number | null;
   text: string;
   order: number;

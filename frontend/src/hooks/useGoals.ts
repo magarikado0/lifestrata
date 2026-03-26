@@ -1,97 +1,81 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { type Goal, type Task } from '../types';
+import * as api from '../api/goals';
 
-let nextId = 100;
-
-function makeGoal(partial: Omit<Goal, 'id' | 'userId' | 'createdAt' | 'children' | 'linkedTasks'>): Goal {
-  return {
-    id: nextId++,
-    userId: 1,
-    createdAt: new Date().toISOString(),
-    children: [],
-    linkedTasks: [],
-    ...partial,
-  };
+function hydrateLinkedTasks(goals: Goal[], tasks: Task[]): Goal[] {
+  function hydrate(g: Goal): Goal {
+    const linked = tasks
+      .filter(t => t.goalId === g.id)
+      .map(t => ({ id: t.id, text: t.text, done: t.done }));
+    return { ...g, linkedTasks: linked, children: g.children.map(hydrate) };
+  }
+  return goals.map(hydrate);
 }
 
-const initialGoals: Goal[] = [
-  {
-    id: 1, userId: 1, parentId: null, text: '深層研究で起業する', order: 0, open: true,
-    createdAt: new Date().toISOString(), linkedTasks: [], children: [
-      {
-        id: 2, userId: 1, parentId: 1, text: '修士で研究成果を出す', order: 0, open: true,
-        createdAt: new Date().toISOString(), linkedTasks: [], children: [],
-      },
-      {
-        id: 3, userId: 1, parentId: 1, text: 'プロダクト開発を始める', order: 1, open: false,
-        createdAt: new Date().toISOString(), linkedTasks: [], children: [],
-      },
-    ],
-  },
-];
-
-function updateGoalInTree(goals: Goal[], id: number, updater: (g: Goal) => Goal): Goal[] {
-  return goals.map(g => {
-    if (g.id === id) return updater(g);
-    return { ...g, children: updateGoalInTree(g.children, id, updater) };
-  });
+function countChildren(goals: Goal[], parentId: number): number {
+  for (const g of goals) {
+    if (g.id === parentId) return g.children.length;
+    const found = countChildren(g.children, parentId);
+    if (found >= 0) return found;
+  }
+  return 0;
 }
 
-function deleteGoalInTree(goals: Goal[], id: number): Goal[] {
+function updateInTree(goals: Goal[], id: number, updater: (g: Goal) => Goal): Goal[] {
+  return goals.map(g =>
+    g.id === id ? updater(g) : { ...g, children: updateInTree(g.children, id, updater) }
+  );
+}
+
+function deleteInTree(goals: Goal[], id: number): Goal[] {
   return goals
     .filter(g => g.id !== id)
-    .map(g => ({ ...g, children: deleteGoalInTree(g.children, id) }));
-}
-
-function addChildInTree(goals: Goal[], parentId: number, child: Goal): Goal[] {
-  return goals.map(g => {
-    if (g.id === parentId) return { ...g, children: [...g.children, child] };
-    return { ...g, children: addChildInTree(g.children, parentId, child) };
-  });
+    .map(g => ({ ...g, children: deleteInTree(g.children, id) }));
 }
 
 export function useGoals(tasks: Task[]) {
-  const [goals, setGoals] = useState<Goal[]>(initialGoals);
+  const [rawGoals, setRawGoals] = useState<Goal[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const getGoalsWithTasks = useCallback((): Goal[] => {
-    function hydrate(g: Goal): Goal {
-      const linked = tasks.filter(t => t.goalId === g.id).map(t => ({ id: t.id, text: t.text, done: t.done }));
-      return { ...g, linkedTasks: linked, children: g.children.map(hydrate) };
-    }
-    return goals.map(hydrate);
-  }, [goals, tasks]);
-
-  const addRootGoal = useCallback((text: string) => {
-    const goal = makeGoal({ parentId: null, text, order: goals.length, open: true });
-    setGoals(prev => [...prev, goal]);
-  }, [goals.length]);
-
-  const addChildGoal = useCallback((parentId: number, text: string) => {
-    let childOrder = 0;
-    function countChildren(gs: Goal[]): number {
-      for (const g of gs) {
-        if (g.id === parentId) return g.children.length;
-        const r = countChildren(g.children);
-        if (r >= 0) return r;
-      }
-      return 0;
-    }
-    childOrder = countChildren(goals);
-    const child = makeGoal({ parentId, text, order: childOrder, open: true });
-    setGoals(prev => addChildInTree(prev, parentId, child));
-  }, [goals]);
-
-  const updateGoal = useCallback((id: number, updates: Partial<Goal>) => {
-    setGoals(prev => updateGoalInTree(prev, id, g => ({ ...g, ...updates })));
+  useEffect(() => {
+    api.fetchGoals()
+      .then(setRawGoals)
+      .finally(() => setLoading(false));
   }, []);
 
-  const toggleOpen = useCallback((id: number) => {
-    setGoals(prev => updateGoalInTree(prev, id, g => ({ ...g, open: !g.open })));
+  const goals = hydrateLinkedTasks(rawGoals, tasks);
+
+  const addRootGoal = useCallback(async (text: string) => {
+    const created = await api.createGoal({ parentId: null, text, order: rawGoals.length });
+    setRawGoals(prev => [...prev, created]);
+  }, [rawGoals.length]);
+
+  const addChildGoal = useCallback(async (parentId: number, text: string) => {
+    const order = countChildren(rawGoals, parentId);
+    const created = await api.createGoal({ parentId, text, order });
+    setRawGoals(prev =>
+      updateInTree(prev, parentId, g => ({ ...g, children: [...g.children, created] }))
+    );
+  }, [rawGoals]);
+
+  const updateGoal = useCallback(async (id: number, updates: { text?: string; open?: boolean }) => {
+    setRawGoals(prev => updateInTree(prev, id, g => ({ ...g, ...updates })));
+    await api.patchGoal(id, updates);
   }, []);
 
-  const deleteGoal = useCallback((id: number) => {
-    setGoals(prev => deleteGoalInTree(prev, id));
+  const toggleOpen = useCallback(async (id: number) => {
+    let newOpen = true;
+    setRawGoals(prev => updateInTree(prev, id, g => {
+      newOpen = !g.open;
+      return { ...g, open: newOpen };
+    }));
+    await api.patchGoal(id, { open: newOpen });
   }, []);
 
-  return { goals: getGoalsWithTasks(), addRootGoal, addChildGoal, updateGoal, toggleOpen, deleteGoal };
+  const deleteGoal = useCallback(async (id: number) => {
+    setRawGoals(prev => deleteInTree(prev, id));
+    await api.removeGoal(id);
+  }, []);
+
+  return { goals, loading, addRootGoal, addChildGoal, updateGoal, toggleOpen, deleteGoal };
 }
