@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { type Goal, minutesToTime } from '../../types';
+import { type Goal, type Task, minutesToTime } from '../../types';
 import { TimeSlider } from './TimeSlider';
 import { GoalPicker } from './GoalPicker';
 
 interface Props {
   goals: Goal[];
   selectedDate: string;
+  initialTask?: Task;
   onAdd: (text: string, hasTime: boolean, minutes: number | null, goalId: number | null) => void;
   onClose: () => void;
 }
@@ -19,11 +20,12 @@ function findGoalText(goals: Goal[], id: number): string | null {
   return null;
 }
 
-export function AddModal({ goals, onAdd, onClose }: Props) {
-  const [text, setText] = useState('');
-  const [hasTime, setHasTime] = useState(false);
-  const [minutes, setMinutes] = useState(540);
-  const [goalId, setGoalId] = useState<number | null>(null);
+export function AddModal({ goals, initialTask, onAdd, onClose }: Props) {
+  const [text, setText] = useState(initialTask?.text ?? '');
+  const [hasTime, setHasTime] = useState(initialTask?.hasTime ?? false);
+  const [minutes, setMinutes] = useState(initialTask?.minutes ?? 540);
+  const [goalId, setGoalId] = useState<number | null>(initialTask?.goalId ?? null);
+  const isEditing = initialTask !== undefined;
   const [showGoalPicker, setShowGoalPicker] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -125,7 +127,7 @@ export function AddModal({ goals, onAdd, onClose }: Props) {
             marginTop: 4,
           }}
         >
-          追加
+          {isEditing ? '更新' : '追加'}
         </button>
       </div>
 

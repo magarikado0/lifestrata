@@ -36,6 +36,7 @@ function MainApp({ email }: { email: string }) {
             tasks={tasks}
             goals={goals}
             onAdd={addTask}
+            onUpdate={updateTask}
             onToggle={toggleDone}
             onDelete={deleteTask}
           />
