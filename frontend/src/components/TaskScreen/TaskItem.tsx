@@ -4,9 +4,10 @@ interface Props {
   task: Task;
   onToggle: () => void;
   onDelete: () => void;
+  onEdit: () => void;
 }
 
-export function TaskItem({ task, onToggle, onDelete }: Props) {
+export function TaskItem({ task, onToggle, onDelete, onEdit }: Props) {
   return (
     <div
       style={{
@@ -28,12 +29,13 @@ export function TaskItem({ task, onToggle, onDelete }: Props) {
       >
         {task.done && <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5 6 4.5 9 10.5 3"/></svg>}
       </button>
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0 }} onClick={onEdit}>
         <div style={{
           fontSize: 15,
           textDecoration: task.done ? 'line-through' : 'none',
           color: 'var(--text-primary)',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          cursor: 'pointer',
         }}>
           {task.text}
         </div>

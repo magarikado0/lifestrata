@@ -8,15 +8,17 @@ interface Props {
   tasks: Task[];
   goals: Goal[];
   onAdd: (text: string, date: string, hasTime: boolean, minutes: number | null, goalId: number | null) => void;
+  onUpdate: (id: number, updates: Partial<Task>) => void;
   onToggle: (id: number) => void;
   onDelete: (id: number) => void;
 }
 
-export function TaskScreen({ tasks, goals, onAdd, onToggle, onDelete }: Props) {
+export function TaskScreen({ tasks, goals, onAdd, onUpdate, onToggle, onDelete }: Props) {
   const today = formatDate(new Date());
   const [selectedDate, setSelectedDate] = useState(today);
   const [weekOffset, setWeekOffset] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const taskDates = useMemo(() => new Set(tasks.map(t => t.date)), [tasks]);
   const dayTasks = useMemo(() => tasks.filter(t => t.date === selectedDate), [tasks, selectedDate]);
@@ -64,6 +66,7 @@ export function TaskScreen({ tasks, goals, onAdd, onToggle, onDelete }: Props) {
         filter="all"
         onToggle={onToggle}
         onDelete={onDelete}
+        onEdit={id => setEditingTask(tasks.find(t => t.id === id) ?? null)}
       />
 
       <button
@@ -89,6 +92,19 @@ export function TaskScreen({ tasks, goals, onAdd, onToggle, onDelete }: Props) {
             setShowAddModal(false);
           }}
           onClose={() => setShowAddModal(false)}
+        />
+      )}
+
+      {editingTask && (
+        <AddModal
+          goals={goals}
+          selectedDate={selectedDate}
+          initialTask={editingTask}
+          onAdd={(text, hasTime, minutes, goalId) => {
+            onUpdate(editingTask.id, { text, hasTime, minutes: hasTime ? minutes : null, goalId });
+            setEditingTask(null);
+          }}
+          onClose={() => setEditingTask(null)}
         />
       )}
     </div>
