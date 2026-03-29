@@ -41,7 +41,7 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: Props) {
         </div>
         {task.hasTime && task.minutes !== null && (
           <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
-            {task.endMinutes !== null
+            {task.endMinutes != null
               ? `${minutesToTime(task.minutes)} 〜 ${minutesToTime(task.endMinutes)}`
               : minutesToTime(task.minutes)}
           </div>
