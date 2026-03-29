@@ -11,6 +11,9 @@ interface Props {
   onClose: () => void;
 }
 
+// 23:30 - avoid wrapping past midnight when proposing a default end time (+30 min)
+const MAX_START_MINUTES_FOR_DEFAULT_END = 1410;
+
 function findGoalText(goals: Goal[], id: number): string | null {
   for (const g of goals) {
     if (g.id === id) return g.text;
@@ -20,10 +23,30 @@ function findGoalText(goals: Goal[], id: number): string | null {
   return null;
 }
 
+function getTimeLabel({
+  hasTime,
+  hasStartTime,
+  hasEndTime,
+  minutes,
+  endMinutes,
+}: {
+  hasTime: boolean;
+  hasStartTime: boolean;
+  hasEndTime: boolean;
+  minutes: number;
+  endMinutes: number;
+}): string {
+  if (!hasTime) return '時間を設定';
+  if (hasStartTime && hasEndTime) return `${minutesToTime(minutes)} 〜 ${minutesToTime(endMinutes)}`;
+  if (hasStartTime) return `開始: ${minutesToTime(minutes)}`;
+  if (hasEndTime) return `終了: ${minutesToTime(endMinutes)}`;
+  return '時間を設定';
+}
+
 export function AddModal({ goals, initialTask, onAdd, onClose }: Props) {
   const [text, setText] = useState(initialTask?.text ?? '');
   const [hasTime, setHasTime] = useState(initialTask?.hasTime ?? false);
-  const [hasStartTime, setHasStartTime] = useState(initialTask?.minutes != null);
+  const [hasStartTime, setHasStartTime] = useState((initialTask?.hasTime ?? false) && initialTask?.minutes !== null);
   const [minutes, setMinutes] = useState(initialTask?.minutes ?? 540);
   const [hasEndTime, setHasEndTime] = useState(initialTask?.endMinutes != null);
   const [endMinutes, setEndMinutes] = useState(initialTask?.endMinutes ?? 570);
@@ -51,6 +74,17 @@ export function AddModal({ goals, initialTask, onAdd, onClose }: Props) {
       }
       return !v;
     });
+  }
+
+  function handleEnableEndTime() {
+    setHasEndTime(true);
+    if (hasStartTime) {
+      if (minutes + 30 <= MAX_START_MINUTES_FOR_DEFAULT_END) {
+        setEndMinutes(minutes + 30);
+      } else {
+        setEndMinutes(minutes);
+      }
+    }
   }
 
   const goalText = goalId !== null ? findGoalText(goals, goalId) : null;
@@ -96,15 +130,7 @@ export function AddModal({ goals, initialTask, onAdd, onClose }: Props) {
           <button onClick={handleToggleHasTime} style={rowToggleStyle(hasTime)}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14.5"/></svg>
             <span style={{ flex: 1, textAlign: 'left' }}>
-              {hasTime
-                ? (hasStartTime && hasEndTime
-                    ? `${minutesToTime(minutes)} 〜 ${minutesToTime(endMinutes)}`
-                    : hasStartTime
-                      ? `開始: ${minutesToTime(minutes)}`
-                      : hasEndTime
-                        ? `終了: ${minutesToTime(endMinutes)}`
-                        : '時間を設定')
-                : '時間を設定'}
+              {getTimeLabel({ hasTime, hasStartTime, hasEndTime, minutes, endMinutes })}
             </span>
             <span style={{ fontSize: 12, color: hasTime ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)' }}>
               {hasTime ? '▲' : '▼'}
@@ -145,10 +171,7 @@ export function AddModal({ goals, initialTask, onAdd, onClose }: Props) {
                 />
               ) : (
                 <button
-                  onClick={() => {
-                    setHasEndTime(true);
-                    if (hasStartTime) setEndMinutes(minutes + 30 <= 1410 ? minutes + 30 : minutes);
-                  }}
+                  onClick={handleEnableEndTime}
                   style={{
                     alignSelf: 'flex-start', fontSize: 12, padding: '3px 10px', borderRadius: 6,
                     border: '1px solid var(--border)', background: 'none',

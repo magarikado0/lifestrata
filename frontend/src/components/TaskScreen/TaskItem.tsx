@@ -7,7 +7,22 @@ interface Props {
   onEdit: () => void;
 }
 
+function formatTaskTime(task: Task): string {
+  if (!task.hasTime) return '';
+  const startMinutes = task.minutes;
+  const endMinutes = task.endMinutes;
+  const hasStartTime = startMinutes !== null;
+  const hasEndTime = endMinutes !== null;
+  if (!hasStartTime && !hasEndTime) return '';
+  if (hasStartTime && hasEndTime) return `${minutesToTime(startMinutes)} 〜 ${minutesToTime(endMinutes)}`;
+  if (hasStartTime) return minutesToTime(startMinutes);
+  if (hasEndTime) return `〜 ${minutesToTime(endMinutes)}`;
+  return '';
+}
+
 export function TaskItem({ task, onToggle, onDelete, onEdit }: Props) {
+  const timeText = formatTaskTime(task);
+
   return (
     <div
       style={{
@@ -39,16 +54,9 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: Props) {
         }}>
           {task.text}
         </div>
-        {task.hasTime && (task.minutes !== null || task.endMinutes !== null) && (
+        {timeText && (
           <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
-            {task.minutes !== null && task.endMinutes !== null
-              ? `${minutesToTime(task.minutes)} 〜 ${minutesToTime(task.endMinutes)}`
-              : task.minutes !== null
-                ? minutesToTime(task.minutes)
-                : task.endMinutes !== null
-                  ? `〜 ${minutesToTime(task.endMinutes)}`
-                  : ''
-            }
+            {timeText}
           </div>
         )}
       </div>
