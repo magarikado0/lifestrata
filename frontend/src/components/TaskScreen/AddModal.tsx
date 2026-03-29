@@ -7,7 +7,7 @@ interface Props {
   goals: Goal[];
   selectedDate: string;
   initialTask?: Task;
-  onAdd: (text: string, hasTime: boolean, minutes: number | null, goalId: number | null) => void;
+  onAdd: (text: string, hasTime: boolean, minutes: number | null, endMinutes: number | null, goalId: number | null) => void;
   onClose: () => void;
 }
 
@@ -24,6 +24,8 @@ export function AddModal({ goals, initialTask, onAdd, onClose }: Props) {
   const [text, setText] = useState(initialTask?.text ?? '');
   const [hasTime, setHasTime] = useState(initialTask?.hasTime ?? false);
   const [minutes, setMinutes] = useState(initialTask?.minutes ?? 540);
+  const [hasEndTime, setHasEndTime] = useState(initialTask?.endMinutes != null);
+  const [endMinutes, setEndMinutes] = useState(initialTask?.endMinutes ?? 570);
   const [goalId, setGoalId] = useState<number | null>(initialTask?.goalId ?? null);
   const isEditing = initialTask !== undefined;
   const [showGoalPicker, setShowGoalPicker] = useState(false);
@@ -36,7 +38,14 @@ export function AddModal({ goals, initialTask, onAdd, onClose }: Props) {
   function handleSubmit() {
     const trimmed = text.trim();
     if (!trimmed) return;
-    onAdd(trimmed, hasTime, hasTime ? minutes : null, goalId);
+    onAdd(trimmed, hasTime, hasTime ? minutes : null, hasTime && hasEndTime ? endMinutes : null, goalId);
+  }
+
+  function handleToggleHasTime() {
+    setHasTime(v => {
+      if (v) setHasEndTime(false);
+      return !v;
+    });
   }
 
   const goalText = goalId !== null ? findGoalText(goals, goalId) : null;
@@ -79,18 +88,39 @@ export function AddModal({ goals, initialTask, onAdd, onClose }: Props) {
 
         {/* 時間 */}
         <div>
-          <button onClick={() => setHasTime(v => !v)} style={rowToggleStyle(hasTime)}>
+          <button onClick={handleToggleHasTime} style={rowToggleStyle(hasTime)}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14.5"/></svg>
             <span style={{ flex: 1, textAlign: 'left' }}>
-              {hasTime ? `時間: ${minutesToTime(minutes)}` : '時間を設定'}
+              {hasTime
+                ? (hasEndTime ? `${minutesToTime(minutes)} 〜 ${minutesToTime(endMinutes)}` : `開始: ${minutesToTime(minutes)}`)
+                : '時間を設定'}
             </span>
             <span style={{ fontSize: 12, color: hasTime ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)' }}>
               {hasTime ? '▲' : '▼'}
             </span>
           </button>
           {hasTime && (
-            <div style={{ paddingTop: 6 }}>
-              <TimeSlider minutes={minutes} onChange={setMinutes} onClear={() => setHasTime(false)} />
+            <div style={{ paddingTop: 6, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <TimeSlider minutes={minutes} onChange={setMinutes} onClear={() => { setHasTime(false); setHasEndTime(false); }} />
+              {hasEndTime ? (
+                <TimeSlider
+                  minutes={endMinutes}
+                  onChange={setEndMinutes}
+                  onClear={() => setHasEndTime(false)}
+                  clearLabel="× 終了なし"
+                />
+              ) : (
+                <button
+                  onClick={() => { setHasEndTime(true); setEndMinutes(minutes + 30 <= 1410 ? minutes + 30 : minutes); }}
+                  style={{
+                    alignSelf: 'flex-start', fontSize: 12, padding: '3px 10px', borderRadius: 6,
+                    border: '1px solid var(--border)', background: 'none',
+                    color: 'var(--text-secondary)', cursor: 'pointer',
+                  }}
+                >
+                  + 終了時間を設定
+                </button>
+              )}
             </div>
           )}
         </div>

@@ -35,7 +35,7 @@ function MainApp({ email }: { email: string }) {
           <TaskScreen
             tasks={tasks}
             goals={goals}
-            onAdd={addTask}
+            onAdd={(text, date, hasTime, minutes, goalId, endMinutes) => addTask(text, date, hasTime, minutes, goalId, endMinutes)}
             onUpdate={updateTask}
             onToggle={toggleDone}
             onDelete={deleteTask}

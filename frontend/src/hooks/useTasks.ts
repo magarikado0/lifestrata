@@ -18,8 +18,9 @@ export function useTasks() {
     hasTime: boolean,
     minutes: number | null,
     goalId: number | null = null,
+    endMinutes: number | null = null,
   ) => {
-    const created = await api.createTask({ text, date, hasTime, minutes, goalId });
+    const created = await api.createTask({ text, date, hasTime, minutes, endMinutes, goalId });
     setTasks(prev => [...prev, created]);
   }, []);
 

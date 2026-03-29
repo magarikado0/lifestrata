@@ -5,6 +5,7 @@ export interface Task {
   date: string; // ISO date string
   hasTime: boolean;
   minutes: number | null; // minutes from 0:00
+  endMinutes: number | null; // end time in minutes from 0:00
   done: boolean;
   goalId: number | null;
   createdAt: string;
