@@ -14,16 +14,20 @@ create table if not exists goals (
 );
 
 create table if not exists tasks (
-  id         bigint primary key generated always as identity,
-  user_id    uuid references auth.users not null,
-  text       text not null,
-  date       date not null,
-  has_time   boolean not null default false,
-  minutes    integer,
-  done       boolean not null default false,
-  goal_id    bigint references goals(id) on delete set null,
-  created_at timestamptz not null default now()
+  id          bigint primary key generated always as identity,
+  user_id     uuid references auth.users not null,
+  text        text not null,
+  date        date not null,
+  has_time    boolean not null default false,
+  minutes     integer,
+  end_minutes integer,
+  done        boolean not null default false,
+  goal_id     bigint references goals(id) on delete set null,
+  created_at  timestamptz not null default now()
 );
+
+-- 既存テーブルへのマイグレーション
+-- alter table tasks add column if not exists end_minutes integer;
 
 -- インデックス
 create index if not exists tasks_user_date on tasks(user_id, date);

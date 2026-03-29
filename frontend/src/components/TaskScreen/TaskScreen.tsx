@@ -7,7 +7,7 @@ import { AddModal } from './AddModal';
 interface Props {
   tasks: Task[];
   goals: Goal[];
-  onAdd: (text: string, date: string, hasTime: boolean, minutes: number | null, goalId: number | null) => void;
+  onAdd: (text: string, date: string, hasTime: boolean, minutes: number | null, goalId: number | null, endMinutes: number | null) => void;
   onUpdate: (id: number, updates: Partial<Task>) => void;
   onToggle: (id: number) => void;
   onDelete: (id: number) => void;
@@ -87,8 +87,8 @@ export function TaskScreen({ tasks, goals, onAdd, onUpdate, onToggle, onDelete }
         <AddModal
           goals={goals}
           selectedDate={selectedDate}
-          onAdd={(text, hasTime, minutes, goalId) => {
-            onAdd(text, selectedDate, hasTime, minutes, goalId);
+          onAdd={(text, hasTime, minutes, endMinutes, goalId) => {
+            onAdd(text, selectedDate, hasTime, minutes, goalId, endMinutes);
             setShowAddModal(false);
           }}
           onClose={() => setShowAddModal(false)}
@@ -100,8 +100,8 @@ export function TaskScreen({ tasks, goals, onAdd, onUpdate, onToggle, onDelete }
           goals={goals}
           selectedDate={selectedDate}
           initialTask={editingTask}
-          onAdd={(text, hasTime, minutes, goalId) => {
-            onUpdate(editingTask.id, { text, hasTime, minutes: hasTime ? minutes : null, goalId });
+          onAdd={(text, hasTime, minutes, endMinutes, goalId) => {
+            onUpdate(editingTask.id, { text, hasTime, minutes: hasTime ? minutes : null, endMinutes, goalId });
             setEditingTask(null);
           }}
           onClose={() => setEditingTask(null)}
