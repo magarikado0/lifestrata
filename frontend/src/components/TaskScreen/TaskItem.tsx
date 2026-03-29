@@ -39,11 +39,16 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: Props) {
         }}>
           {task.text}
         </div>
-        {task.hasTime && task.minutes !== null && (
+        {task.hasTime && (task.minutes !== null || task.endMinutes !== null) && (
           <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
-            {task.endMinutes !== null
+            {task.minutes !== null && task.endMinutes !== null
               ? `${minutesToTime(task.minutes)} 〜 ${minutesToTime(task.endMinutes)}`
-              : minutesToTime(task.minutes)}
+              : task.minutes !== null
+                ? minutesToTime(task.minutes)
+                : task.endMinutes !== null
+                  ? `〜 ${minutesToTime(task.endMinutes)}`
+                  : ''
+            }
           </div>
         )}
       </div>
