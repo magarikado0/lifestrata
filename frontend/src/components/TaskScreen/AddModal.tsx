@@ -23,6 +23,7 @@ function findGoalText(goals: Goal[], id: number): string | null {
 export function AddModal({ goals, initialTask, onAdd, onClose }: Props) {
   const [text, setText] = useState(initialTask?.text ?? '');
   const [hasTime, setHasTime] = useState(initialTask?.hasTime ?? false);
+  const [hasStartTime, setHasStartTime] = useState(initialTask?.minutes != null);
   const [minutes, setMinutes] = useState(initialTask?.minutes ?? 540);
   const [hasEndTime, setHasEndTime] = useState(initialTask?.endMinutes != null);
   const [endMinutes, setEndMinutes] = useState(initialTask?.endMinutes ?? 570);
@@ -38,12 +39,16 @@ export function AddModal({ goals, initialTask, onAdd, onClose }: Props) {
   function handleSubmit() {
     const trimmed = text.trim();
     if (!trimmed) return;
-    onAdd(trimmed, hasTime, hasTime ? minutes : null, hasTime && hasEndTime ? endMinutes : null, goalId);
+    const hasAnyTime = hasTime && (hasStartTime || hasEndTime);
+    onAdd(trimmed, hasAnyTime, hasAnyTime && hasStartTime ? minutes : null, hasAnyTime && hasEndTime ? endMinutes : null, goalId);
   }
 
   function handleToggleHasTime() {
     setHasTime(v => {
-      if (v) setHasEndTime(false);
+      if (v) {
+        setHasStartTime(false);
+        setHasEndTime(false);
+      }
       return !v;
     });
   }
@@ -92,7 +97,13 @@ export function AddModal({ goals, initialTask, onAdd, onClose }: Props) {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14.5"/></svg>
             <span style={{ flex: 1, textAlign: 'left' }}>
               {hasTime
-                ? (hasEndTime ? `${minutesToTime(minutes)} 〜 ${minutesToTime(endMinutes)}` : `開始: ${minutesToTime(minutes)}`)
+                ? (hasStartTime && hasEndTime
+                    ? `${minutesToTime(minutes)} 〜 ${minutesToTime(endMinutes)}`
+                    : hasStartTime
+                      ? `開始: ${minutesToTime(minutes)}`
+                      : hasEndTime
+                        ? `終了: ${minutesToTime(endMinutes)}`
+                        : '時間を設定')
                 : '時間を設定'}
             </span>
             <span style={{ fontSize: 12, color: hasTime ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)' }}>
@@ -101,17 +112,43 @@ export function AddModal({ goals, initialTask, onAdd, onClose }: Props) {
           </button>
           {hasTime && (
             <div style={{ paddingTop: 6, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <TimeSlider minutes={minutes} onChange={setMinutes} onClear={() => { setHasTime(false); setHasEndTime(false); }} />
+              {hasStartTime ? (
+                <TimeSlider
+                  minutes={minutes}
+                  onChange={setMinutes}
+                  onClear={() => {
+                    setHasStartTime(false);
+                    if (!hasEndTime) setHasTime(false);
+                  }}
+                />
+              ) : (
+                <button
+                  onClick={() => setHasStartTime(true)}
+                  style={{
+                    alignSelf: 'flex-start', fontSize: 12, padding: '3px 10px', borderRadius: 6,
+                    border: '1px solid var(--border)', background: 'none',
+                    color: 'var(--text-secondary)', cursor: 'pointer',
+                  }}
+                >
+                  + 開始時間を設定
+                </button>
+              )}
               {hasEndTime ? (
                 <TimeSlider
                   minutes={endMinutes}
                   onChange={setEndMinutes}
-                  onClear={() => setHasEndTime(false)}
+                  onClear={() => {
+                    setHasEndTime(false);
+                    if (!hasStartTime) setHasTime(false);
+                  }}
                   clearLabel="× 終了なし"
                 />
               ) : (
                 <button
-                  onClick={() => { setHasEndTime(true); setEndMinutes(minutes + 30 <= 1410 ? minutes + 30 : minutes); }}
+                  onClick={() => {
+                    setHasEndTime(true);
+                    if (hasStartTime) setEndMinutes(minutes + 30 <= 1410 ? minutes + 30 : minutes);
+                  }}
                   style={{
                     alignSelf: 'flex-start', fontSize: 12, padding: '3px 10px', borderRadius: 6,
                     border: '1px solid var(--border)', background: 'none',
