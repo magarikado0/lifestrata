@@ -3,13 +3,14 @@ import { TaskItem } from './TaskItem';
 
 interface Props {
   tasks: Task[];
+  loading: boolean;
   filter: 'all';
   onToggle: (id: number) => void;
   onDelete: (id: number) => void;
   onEdit: (id: number) => void;
 }
 
-export function TaskList({ tasks, onToggle, onDelete, onEdit }: Props) {
+export function TaskList({ tasks, loading, onToggle, onDelete, onEdit }: Props) {
   const active = tasks.filter(t => !t.done).sort((a, b) => (a.minutes ?? 9999) - (b.minutes ?? 9999));
   const done = tasks.filter(t => t.done);
 
@@ -28,7 +29,7 @@ export function TaskList({ tasks, onToggle, onDelete, onEdit }: Props) {
           ))}
         </>
       )}
-      {tasks.length === 0 && (
+      {!loading && tasks.length === 0 && (
         <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0', fontSize: 14 }}>
           タスクなし
         </div>

@@ -14,7 +14,7 @@ type Tab = 'tasks' | 'goals';
 function MainApp({ email }: { email: string }) {
   const [tab, setTab] = useState<Tab>('tasks');
   const [showSettings, setShowSettings] = useState(false);
-  const { tasks, addTask, updateTask, deleteTask, toggleDone } = useTasks();
+  const { tasks, loading: tasksLoading, addTask, updateTask, deleteTask, toggleDone } = useTasks();
   const { goals, addRootGoal, addChildGoal, updateGoal, toggleOpen, reparentGoal, deleteGoal } = useGoals(tasks);
 
   function handleUnlink(_goalId: number, taskId: number) {
@@ -34,6 +34,7 @@ function MainApp({ email }: { email: string }) {
         }}>
           <TaskScreen
             tasks={tasks}
+            loading={tasksLoading}
             goals={goals}
             onAdd={(text, date, hasTime, minutes, goalId, endMinutes) => addTask(text, date, hasTime, minutes, goalId, endMinutes)}
             onUpdate={updateTask}

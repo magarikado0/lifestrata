@@ -6,6 +6,7 @@ import { AddModal } from './AddModal';
 
 interface Props {
   tasks: Task[];
+  loading: boolean;
   goals: Goal[];
   onAdd: (text: string, date: string, hasTime: boolean, minutes: number | null, goalId: number | null, endMinutes: number | null) => void;
   onUpdate: (id: number, updates: Partial<Task>) => void;
@@ -13,7 +14,7 @@ interface Props {
   onDelete: (id: number) => void;
 }
 
-export function TaskScreen({ tasks, goals, onAdd, onUpdate, onToggle, onDelete }: Props) {
+export function TaskScreen({ tasks, loading, goals, onAdd, onUpdate, onToggle, onDelete }: Props) {
   const today = formatDate(new Date());
   const [selectedDate, setSelectedDate] = useState(today);
   const [weekOffset, setWeekOffset] = useState(0);
@@ -63,6 +64,7 @@ export function TaskScreen({ tasks, goals, onAdd, onUpdate, onToggle, onDelete }
       </div>
       <TaskList
         tasks={dayTasks}
+        loading={loading}
         filter="all"
         onToggle={onToggle}
         onDelete={onDelete}
