@@ -133,7 +133,7 @@ export function AddModal({ goals, initialTask, onAdd, onClose }: Props) {
                   onClick={() => {
                     setHasEndTime(true);
                     const base = hasStartTime ? minutes : endMinutes;
-                    setEndMinutes(base + 30 <= 1410 ? base + 30 : base);
+                    setEndMinutes(base + 1 <= 1439 ? base + 1 : base);
                   }}
                   style={{
                     alignSelf: 'flex-start', fontSize: 12, padding: '3px 10px', borderRadius: 6,

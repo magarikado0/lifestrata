@@ -8,7 +8,7 @@ interface Props {
 }
 
 export function TimeSlider({ minutes, onChange, onClear, clearLabel = '× 時間なし' }: Props) {
-  const step = Math.round(minutes / 30);
+  const clampedMinutes = Math.max(0, Math.min(1439, Math.round(minutes)));
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
       {onClear && (
@@ -24,14 +24,15 @@ export function TimeSlider({ minutes, onChange, onClear, clearLabel = '× 時間
         </button>
       )}
       <span style={{ fontSize: 13, fontWeight: 600, minWidth: 40, color: 'var(--text-primary)' }}>
-        {minutesToTime(step * 30)}
+        {minutesToTime(clampedMinutes)}
       </span>
       <input
         type="range"
         min={0}
-        max={47}
-        value={step}
-        onChange={e => onChange(Number(e.target.value) * 30)}
+        max={1439}
+        step={1}
+        value={clampedMinutes}
+        onChange={e => onChange(Number(e.target.value))}
         style={{ flex: 1, accentColor: 'var(--text-primary)' }}
       />
     </div>
