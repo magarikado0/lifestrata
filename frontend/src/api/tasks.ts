@@ -1,6 +1,15 @@
 import { supabase } from '../lib/supabase';
 import { type Task } from '../types';
 
+function isMissingEndMinutesColumn(error: unknown): boolean {
+  const candidate = error as { code?: string; message?: string } | null;
+  return (
+    candidate?.code === 'PGRST204' &&
+    typeof candidate.message === 'string' &&
+    candidate.message.includes("'end_minutes'")
+  );
+}
+
 // DB row → frontend型に変換
 function toTask(row: Record<string, unknown>): Task {
   return {
@@ -9,8 +18,8 @@ function toTask(row: Record<string, unknown>): Task {
     text: row.text as string,
     date: row.date as string,
     hasTime: row.has_time as boolean,
-    minutes: row.minutes as number | null,
-    endMinutes: row.end_minutes as number | null,
+    minutes: (row.minutes as number | null) ?? null,
+    endMinutes: (row.end_minutes as number | null) ?? null,
     done: row.done as boolean,
     goalId: row.goal_id as number | null,
     createdAt: row.created_at as string,
@@ -31,20 +40,35 @@ export async function createTask(
 ): Promise<Task> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
-  const { data, error } = await supabase
+
+  const payloadWithEndMinutes = {
+    user_id: user.id,
+    text: task.text,
+    date: task.date,
+    has_time: task.hasTime,
+    minutes: task.minutes,
+    end_minutes: task.endMinutes,
+    done: false,
+    goal_id: task.goalId,
+  };
+
+  let { data, error } = await supabase
     .from('tasks')
-    .insert({
-      user_id: user.id,
-      text: task.text,
-      date: task.date,
-      has_time: task.hasTime,
-      minutes: task.minutes,
-      end_minutes: task.endMinutes,
-      done: false,
-      goal_id: task.goalId,
-    })
+    .insert(payloadWithEndMinutes)
     .select()
     .single();
+
+  if (isMissingEndMinutesColumn(error)) {
+    const { end_minutes: _ignored, ...payloadWithoutEndMinutes } = payloadWithEndMinutes;
+    const retry = await supabase
+      .from('tasks')
+      .insert(payloadWithoutEndMinutes)
+      .select()
+      .single();
+    data = retry.data;
+    error = retry.error;
+  }
+
   if (error) throw error;
   return toTask(data);
 }
@@ -58,7 +82,16 @@ export async function patchTask(id: number, updates: Partial<Task>): Promise<voi
   if ('endMinutes' in updates) row.end_minutes = updates.endMinutes;
   if (updates.done !== undefined) row.done = updates.done;
   if ('goalId' in updates) row.goal_id = updates.goalId;
-  const { error } = await supabase.from('tasks').update(row).eq('id', id);
+
+  let { error } = await supabase.from('tasks').update(row).eq('id', id);
+
+  if (isMissingEndMinutesColumn(error) && 'end_minutes' in row) {
+    delete row.end_minutes;
+    if (Object.keys(row).length === 0) return;
+    const retry = await supabase.from('tasks').update(row).eq('id', id);
+    error = retry.error;
+  }
+
   if (error) throw error;
 }
 
